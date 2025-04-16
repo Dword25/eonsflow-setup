@@ -1,14 +1,19 @@
 {
   "name": "cloudflare-vercel-generator",
   "version": "1.0.0",
-  "main": "api/generate-worker.js",
-  "type": "module",
+  "description": "",
+  "main": "index.js",
   "scripts": {
     "dev": "vercel dev",
-    "start": "vercel start"
+    "start": "vercel dev"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.0.3",
-    "node-fetch": "^3.3.2"
+    "dotenv": "^16.4.5",
+    "formdata-polyfill": "^4.0.10",
+    "node-fetch": "^2.6.12",
+    "web-streams-polyfill": "^3.3.3"
   }
 }
