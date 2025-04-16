@@ -1,14 +1,3 @@
-{
-  "version": 2,
-  "functions": {
-    "api/generate-worker.cjs": {
-      "runtime": "nodejs18"
-    }
-  },
-  "routes": [
-    {
-      "src": "/api/generate-worker",
-      "dest": "api/generate-worker.cjs"
-    }
-  ]
-}
+git add .
+git commit -m "🔧 Fix runtime version to nodejs18.x"
+git push origin main
