@@ -1,48 +1,41 @@
 const fs = require("fs");
 const path = require("path");
-const getRawBody = require("raw-body");
 
 module.exports = async (req, res) => {
-  let webAppUrl = "";
-
   try {
-    const rawBody = await getRawBody(req);
-    const body = JSON.parse(rawBody.toString("utf8"));
-    webAppUrl = body.webAppUrl;
-    console.log("✅ WebApp URL:", webAppUrl);
-  } catch (err) {
-    console.error("❌ Body 파싱 실패:", err);
-    return res.status(500).json({ error: "Body 파싱 실패", detail: err.message });
-  }
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method Not Allowed" });
+    }
 
-  const templatePath = path.resolve("template.html");
-  const workerPath = path.resolve("worker-template.js");
-
-  try {
-    const htmlTemplate = fs.readFileSync(templatePath, "utf8");
-    const workerScript = fs.readFileSync(workerPath, "utf8");
-
-    console.log("ENV:", {
-      CF_API_TOKEN: !!process.env.CF_API_TOKEN,
-      CF_ACCOUNT_ID: !!process.env.CF_ACCOUNT_ID,
-      CF_SUBDOMAIN: process.env.CF_SUBDOMAIN,
+    let body = "";
+    await new Promise((resolve) => {
+      req.on("data", (chunk) => {
+        body += chunk;
+      });
+      req.on("end", resolve);
     });
 
-    console.log("Template Paths:", {
-      template: !!htmlTemplate,
-      worker: !!workerScript,
-    });
+    const { webAppUrl } = JSON.parse(body);
 
-    const replaced = htmlTemplate
+    if (!webAppUrl) {
+      return res.status(400).json({ error: "Missing webAppUrl" });
+    }
+
+    // 💡 환경변수 사용 예시
+    const BASE_SCRIPT_URL = process.env.BASE_SCRIPT_URL || "https://your-default-url.com";
+
+    const templatePath = path.join(process.cwd(), "template.html");
+    const template = fs.readFileSync(templatePath, "utf8");
+
+    const result = template
       .replace(/{{WEB_APP_URL}}/g, webAppUrl)
-      .replace(/{{WORKER_SCRIPT}}/g, `<script>\n${workerScript}\n</script>`)
-      .replace(/{{SCRIPT_VERSION}}/g, Date.now());
+      .replace(/{{BASE_SCRIPT_URL}}/g, BASE_SCRIPT_URL);
 
-    res.setHeader("Content-Disposition", "attachment; filename=index.html");
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    return res.status(200).send(replaced);
+    res.setHeader("Content-disposition", "attachment; filename=index.html");
+    res.setHeader("Content-Type", "text/html");
+    res.status(200).send(result);
   } catch (err) {
-    console.error("❌ 템플릿 생성 실패:", err);
-    return res.status(500).json({ error: "템플릿 생성 실패", detail: err.message });
+    console.error("[ERROR]", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
