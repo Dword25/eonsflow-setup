@@ -2,13 +2,13 @@
   "version": 2,
   "functions": {
     "api/generate-worker.cjs": {
-      "runtime": "nodejs18.x"
+      "runtime": "nodejs18"
     }
   },
   "routes": [
     {
       "src": "/api/generate-worker",
-      "dest": "/api/generate-worker.cjs"
+      "dest": "api/generate-worker.cjs"
     }
   ]
 }
